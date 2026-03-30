@@ -1,7 +1,7 @@
 import Foundation
 
 // Model representing a single expense
-struct Expense: Identifiable, Equatable {
+struct Expense: Identifiable, Equatable, Codable {
     var id: UUID
     var amount: Double
     var title: String
@@ -21,7 +21,7 @@ struct Expense: Identifiable, Equatable {
         self.date = date
     }
 }
-enum ExpenseCategory: String, CaseIterable {
+enum ExpenseCategory: String, CaseIterable, Codable {
     case food = "Food"
     case transport = "Transport"
     case shopping = "Shopping"
