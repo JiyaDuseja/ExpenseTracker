@@ -16,20 +16,29 @@ final class AddExpenseViewModel: ObservableObject {
     
     // Stores the selected date, default is current date
     @Published var date: Date = Date()
-
+    
     // This checks whether the Save button should be enabled or not
     var canSave: Bool {
-        // Convert amountText to Double and >0
-        // Make sure title is not empty
-        guard let amount = Double(amountText), amount > 0 else { return false }
+        let normalized = normalizeNumber(amountText)
         
-        return !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        guard let amount = Double(normalized), amount > 0 else { return false }
+        
+        // Remove extra spaces from title
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Make sure title is not empty
+        guard !trimmedTitle.isEmpty else { return false }
+        
+        return true
     }
+    
     // This function creates an Expense object if all inputs are valid
     func buildExpense() -> Expense? {
         
         // Convert amount and check if it's valid
-        guard let amount = Double(amountText), amount > 0 else { return nil }
+        let normalized = normalizeNumber(amountText)
+        
+        guard let amount = Double(normalized), amount > 0 else { return nil }
         
         // Remove extra spaces from title
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -41,3 +50,12 @@ final class AddExpenseViewModel: ObservableObject {
         return Expense(amount: amount, title: trimmedTitle, category: category, date: date)
     }
 }
+    private func normalizeNumber(_ input: String) -> String {
+        let hindiToEnglishMap: [Character: Character] = [
+            "०":"0","१":"1","२":"2","३":"3","४":"4",
+            "५":"5","६":"6","७":"7","८":"8","९":"9"
+        ]
+        
+        return String(input.map { hindiToEnglishMap[$0] ?? $0 })
+    }
+

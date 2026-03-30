@@ -17,40 +17,40 @@ struct AddExpenseView: View {
             Form {
                 
                 
-                Section("Details") {
-                    TextField("Title", text: $viewModel.title)
+                Section("details_section") {
+                    TextField("title_label", text: $viewModel.title)
                     
                     
-                    TextField("Amount", text: $viewModel.amountText)
+                    TextField("amount_label", text: $viewModel.amountText)
                         .keyboardType(.decimalPad)
                 }
                 
-                Section("Category") {
+                Section("category_section") {
                     Picker("Category", selection: $viewModel.category) {
                         
                         ForEach(ExpenseCategory.allCases, id: \.self) { cat in
-                            Text(cat.rawValue).tag(cat)
+                            Text(LocalizedStringKey(cat.localizedKey)).tag(cat)
                         }
                     }
                     .pickerStyle(.menu)
                 }
                 
-                Section("Date") {
+                Section("date_section") {
                     DatePicker("Date", selection: $viewModel.date, displayedComponents: .date)
                 }
             }
             
-            .navigationTitle("Add Expense")
+            .navigationTitle("add_expense_title")
             .navigationBarTitleDisplayMode(.inline)
         
             .toolbar {
                 
                
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("cancel_button") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button("save_button") { save() }
                         .disabled(!viewModel.canSave)
                 }
             }
