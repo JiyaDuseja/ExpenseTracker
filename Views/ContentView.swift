@@ -19,9 +19,9 @@ struct ContentView: View {
             VStack {
 
                 // Filter picker (All / Today / Week / Month)
-                Picker("Filter", selection: $viewModel.selectedFilter) {
+                Picker("filter_title", selection: $viewModel.selectedFilter) {
                     ForEach(ExpenseFilter.allCases) { filter in
-                        Text(filter.rawValue).tag(filter)
+                        Text(LocalizedStringKey(filter.localizedKey)).tag(filter)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -32,10 +32,11 @@ struct ContentView: View {
                     // Show empty state if no expenses
                     if viewModel.filteredExpenses.isEmpty {
                         ContentUnavailableView(
-                            "No expenses yet",
+                            "empty_title",
                             systemImage: "tray",
-                            description: Text("Tap + to add your first expense.")
+                            description: Text("empty_description")
                         )
+                        
                     } else {
                         
                         Section {
@@ -51,7 +52,7 @@ struct ContentView: View {
                             
                             // Section header showing total amount
                             HStack {
-                                Text("Total")
+                                Text("total_label")
                                 Spacer()
                                 
                                 // Display total in currency format

@@ -22,7 +22,7 @@ struct ExpenseRowView: View {
                     .font(.headline)
                 
                 // Expense category
-                Text(expense.category.rawValue)
+                Text(LocalizedStringKey(expense.category.localizedKey))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
