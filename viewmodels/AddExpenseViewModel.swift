@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-// This ViewModel handles all the logic for adding a new expense
+// logic for adding exoense
 @MainActor
 final class AddExpenseViewModel: ObservableObject {
     
@@ -47,9 +47,30 @@ final class AddExpenseViewModel: ObservableObject {
         guard !trimmedTitle.isEmpty else { return nil }
         
         // If everything is valid, return a new Expense object
-        return Expense(amount: amount, title: trimmedTitle, category: category, date: date)
+        return Expense(title: trimmedTitle, amount: amount,  date: date, category: category,)
     }
-}
+    
+    // This function filters the input to allow only valid decimal numbers
+    func filteredAmountInput(_ input: String) -> String {
+        // First normalize any Hindi numerals to English
+        let normalized = normalizeNumber(input)
+        
+        // Allow only digits and decimal point
+        let allowedCharacters = CharacterSet(charactersIn: "0123456789.")
+        let filtered = normalized.filter { char in
+            char.unicodeScalars.allSatisfy { allowedCharacters.contains($0) }
+        }
+        
+        // Ensure only one decimal point
+        let components = filtered.components(separatedBy: ".")
+        if components.count > 2 {
+            // If more than one decimal point, keep only the first one
+            return components[0] + "." + components[1...].joined()
+        }
+        
+        return filtered
+    }
+    
     private func normalizeNumber(_ input: String) -> String {
         let hindiToEnglishMap: [Character: Character] = [
             "०":"0","१":"1","२":"2","३":"3","४":"4",
@@ -58,4 +79,5 @@ final class AddExpenseViewModel: ObservableObject {
         
         return String(input.map { hindiToEnglishMap[$0] ?? $0 })
     }
+}
 
