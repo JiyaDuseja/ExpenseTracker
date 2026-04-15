@@ -1,95 +1,67 @@
 import SwiftUI
+import SwiftData
 
-// Main screen showing list of expenses
 struct ContentView: View {
     
-    // ViewModel that manages expenses data
-    @StateObject private var viewModel: ExpensesListViewModel
+    @Environment(\.modelContext) private var context
+    @State private var viewModel = ExpensesListViewModel()
+    @Query private var expenses: [Expense]
     
-    // Controls whether Add Expense screen is shown
     @State private var isPresentingAdd = false
-
-    // Initialize ViewModel with the shared store
-    init(store: ExpenseStore) {
-        _viewModel = StateObject(wrappedValue: ExpensesListViewModel(store: store))
-    }
-
+    
     var body: some View {
-        NavigationStack {
-            VStack {
-
-                // Filter picker (All / Today / Week / Month)
-                Picker("filter_title", selection: $viewModel.selectedFilter) {
-                    ForEach(ExpenseFilter.allCases) { filter in
-                        Text(LocalizedStringKey(filter.localizedKey)).tag(filter)
-                    }
+        NavigationView {
+            VStack(spacing: 8) {
+                Text("Total: \(viewModel.total(from: expenses), format: .currency(code: Locale.current.currency?.identifier ?? "USD"))")
+                    .font(.title2.bold())
+                    .padding(.horizontal)
+                Picker("Filter", selection: $viewModel.selectedFilter) {
+                    Text("All").tag(ExpenseFilter.all)
+                    Text("Today").tag(ExpenseFilter.today)
+                    Text("Week").tag(ExpenseFilter.week)
+                    Text("Month").tag(ExpenseFilter.month)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
-
-                List {
-                    
-                    // Show empty state if no expenses
-                    if viewModel.filteredExpenses.isEmpty {
-                        ContentUnavailableView(
-                            "empty_title",
-                            systemImage: "tray",
-                            description: Text("empty_description")
-                        )
-                        
-                    } else {
-                        
-                        Section {
-                            // Loop through filtered expenses
-                            ForEach(viewModel.filteredExpenses) { expense in
-                                ExpenseRowView(expense: expense)
-                            }
-                            
-                            // Swipe to delete
-                            .onDelete(perform: viewModel.delete)
-                            
-                        } header: {
-                            
-                            // Section header showing total amount
-                            HStack {
-                                Text("total_label")
-                                Spacer()
+                if viewModel.filteredExpenses(from: expenses).isEmpty {
+                    VStack {
+                        Spacer()
+                        Text("No expenses yet")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                } else {
+                
+                    List {
+                        ForEach(viewModel.filteredExpenses(from: expenses)) { expense in
+                            VStack(alignment: .leading, spacing: 4) {
                                 
-                                // Display total in currency format
-                                Text(
-                                    viewModel.total,
-                                    format: .currency(code: Locale.current.currency?.identifier ?? "INR")
-                                )
-                                .fontWeight(.semibold)
+                                Text(expense.title)
+                                    .font(.headline)
+                                
+                                Text(expense.amount, format: .currency(code: Locale.current.currency?.identifier ?? "INR"))
+                                
+                                Text(expense.date, format: .dateTime.day().month().year())
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .onDelete { indexSet in
+                            for index in indexSet {
+                                context.delete(expenses[index])
                             }
                         }
                     }
                 }
-                .listStyle(.insetGrouped)
             }
-            
-            // Screen title
             .navigationTitle("Expenses")
-            
-            // Top-right + button
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        // Open Add Expense screen
-                        isPresentingAdd = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
+                Button("+") {
+                    isPresentingAdd = true
                 }
             }
-            
-            // Present Add Expense screen as a sheet
             .sheet(isPresented: $isPresentingAdd) {
-                AddExpenseView { expense in
-                    
-                    // Add new expense to list
-                    viewModel.add(expense)
-                }
+                AddExpenseView()
             }
         }
     }
